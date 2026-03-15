@@ -1,65 +1,109 @@
-import Image from "next/image";
+'use client';
 
-export default function Home() {
+import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import { motion, useMotionValue, useSpring } from 'framer-motion';
+import PageTransition from '@/components/ui/PageTransition';
+
+export default function LandingPage() {
+  const router = useRouter();
+  
+  // Custom cursor state for main section hover
+  const [isHovered, setIsHovered] = useState(false);
+  
+  // Smooth cursor tracking
+  const cursorX = useMotionValue(-100);
+  const cursorY = useMotionValue(-100);
+  const springConfig = { damping: 25, stiffness: 300, mass: 0.5 };
+  const cursorXSpring = useSpring(cursorX, springConfig);
+  const cursorYSpring = useSpring(cursorY, springConfig);
+
+  useEffect(() => {
+    const moveCursor = (e: MouseEvent) => {
+      cursorX.set(e.clientX - 12); // center the 24px (w-6 h-6) pointer
+      cursorY.set(e.clientY - 12);
+    };
+    window.addEventListener("mousemove", moveCursor);
+    return () => {
+      window.removeEventListener("mousemove", moveCursor);
+    };
+  }, [cursorX, cursorY]);
+
+  const handleClick = () => {
+    router.push('/create');
+  };
+
   return (
-    <div className="flex min-h-screen items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex min-h-screen w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
+    <PageTransition className="page-container font-mono text-sm lowercase bg-[#f8f8f8] text-[#333333]">
+      {/* Custom Pointer */}
+      <motion.div
+        className="fixed top-0 left-0 w-6 h-6 rounded-full bg-white mix-blend-difference pointer-events-none z-50 transition-opacity duration-300 shadow-[0_0_15px_rgba(255,255,255,0.4)]"
+        style={{
+          x: cursorXSpring,
+          y: cursorYSpring,
+          opacity: isHovered ? 1 : 0,
+        }}
+      />
+      
+      <main 
+        className="min-h-screen flex flex-col relative overflow-hidden pt-12 pb-24"
+        onMouseEnter={() => setIsHovered(true)}
+        onMouseLeave={() => setIsHovered(false)}
+      >
+        {/* Fake Pointer Background Animation (Subtle on light bg) */}
+        <motion.div
+          className="absolute w-[40vw] h-[40vh] rounded-full bg-teal-500/5 blur-[80px] pointer-events-none"
+          animate={{
+            x: ["-10vw", "30vw", "-20vw", "10vw", "-10vw"],
+            y: ["0vh", "20vh", "-30vh", "30vh", "0vh"],
+          }}
+          transition={{ duration: 25, repeat: Infinity, repeatType: "mirror", ease: "linear" }}
         />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
+        <motion.div
+          className="absolute w-[50vw] h-[50vh] rounded-full bg-blue-600/5 blur-[120px] pointer-events-none"
+          animate={{
+            x: ["20vw", "-30vw", "10vw", "-40vw", "20vw"],
+            y: ["-20vh", "10vh", "-40vh", "20vh", "-20vh"],
+          }}
+          transition={{ duration: 35, repeat: Infinity, repeatType: "mirror", ease: "linear" }}
+        />
+
+        <div className="flex-1 w-full flex flex-col items-center justify-center relative z-10">
+          {/* Marquee Text - Moving left to right */}
+          <div className="w-full overflow-hidden relative pointer-events-none select-none flex items-center h-12">
+            <motion.div
+              className="flex whitespace-nowrap absolute"
+              animate={{ x: ["-50%", "0%"] }}
+              transition={{
+                duration: 20,
+                repeat: Infinity,
+                ease: "linear",
+              }}
             >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
+              {[...Array(20)].map((_, i) => (
+                <span key={i} className="pr-8 text-[#333333]">
+                  write your art.<motion.span
+                    animate={{ opacity: [1, 0, 1] }}
+                    transition={{ duration: 1, repeat: Infinity }}
+                  >|</motion.span>
+                </span>
+              ))}
+            </motion.div>
+          </div>
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
+
+        {/* CTA Button */}
+        <div className="z-10 w-full flex justify-center mb-12">
+          <button
+            onClick={handleClick}
+            onMouseEnter={() => setIsHovered(false)} // hide custom pointer when hovering button
+            onMouseLeave={() => setIsHovered(true)}  // show custom pointer again
+            className="hover:opacity-60 transition-opacity duration-200 cursor-pointer text-[#333333]"
           >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
+            start writing
+          </button>
         </div>
       </main>
-    </div>
+    </PageTransition>
   );
 }
