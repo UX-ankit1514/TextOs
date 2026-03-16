@@ -1,5 +1,16 @@
 import type { Metadata } from "next";
+import { Caveat, Playfair_Display } from "next/font/google";
 import "./globals.css";
+
+const caveat = Caveat({
+  subsets: ["latin"],
+  variable: "--font-caveat",
+});
+
+const playfair = Playfair_Display({
+  subsets: ["latin"],
+  variable: "--font-playfair",
+});
 
 export const metadata: Metadata = {
   title: "Hieroglyph — Write Your Art",
@@ -20,7 +31,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className="antialiased">
+      <body className={`${caveat.variable} ${playfair.variable} antialiased`}>
         <div className="dot-grid" aria-hidden="true" />
         {children}
       </body>
